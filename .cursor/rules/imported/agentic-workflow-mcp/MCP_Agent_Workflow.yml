@@ -1,6 +1,6 @@
 app:
-  description: 本地 MCP Agent 工作流 | wf_version 1.2.4 | updated 2026-06-15 | P0
-    LightRAG→Headroom→Codegraph(search)→P1→P2→P3（search limit=8+default-value 防断连）
+  description: 本地 MCP Agent 工作流 | wf_version 1.2.5 | updated 2026-06-16 | P0
+    LightRAG→Headroom→Codegraph(explore)→P1→P2→P3（explore maxFiles=4+default-value 防断连）
   icon: 🔗
   icon_background: '#D5E8FF'
   icon_type: emoji
@@ -786,10 +786,10 @@ workflow:
           \ \"\").strip()\n    tokens = re.findall(\n        r'`([^`]+)`|([A-Z][a-zA-Z0-9]+(?:[A-Z][a-zA-Z0-9]+)+)|([a-zA-Z_][a-zA-Z0-9_]{2,})',\n\
           \        q,\n    )\n    terms = []\n    for groups in tokens:\n        for\
           \ g in groups:\n            if g and len(g) >= 3 and g not in terms:\n \
-          \               terms.append(g)\n    if terms:\n        q = \" \".join(terms[:6])\n\
+          \               terms.append(g)\n    if terms:\n        q = \" \".join(terms[:8])\n\
           \    elif len(q) > 200:\n        q = q[:200]\n    return {\"query\": q}\n"
         code_language: python3
-        desc: 从用户任务提取符号/路径关键词（≤6 个），供 codegraph_search 检索
+        desc: 从用户任务提取符号/路径关键词（≤8 个），供 codegraph_explore 探查
         outputs:
           query:
             children: null
@@ -820,23 +820,23 @@ workflow:
         default_value:
         - key: text
           type: string
-          value: （Codegraph 检索超时或断连，已按空上下文继续）
-        desc: Codegraph · 符号检索（codegraph_search，limit=8；MCP 断连时 default-value 不阻塞）
+          value: （Codegraph explore 超时或断连，已按空上下文继续）
+        desc: Codegraph · 代码图谱探查（codegraph_explore，maxFiles=4；MCP 断连时 default-value 不阻塞）
         error_strategy: default-value
         provider_id: mcp-codegraph
         provider_name: mcp-codegraph
         provider_type: mcp
         selected: false
-        title: Codegraph · 代码图谱检索
+        title: Codegraph · 代码图谱探查
         tool_configurations: {}
-        tool_description: Quick symbol search by name, locations only
-        tool_label: codegraph_search
-        tool_name: codegraph_search
+        tool_description: Explore repository symbols, call chains and structure with source
+        tool_label: codegraph_explore
+        tool_name: codegraph_explore
         tool_node_version: '2'
         tool_parameters:
-          limit:
+          maxFiles:
             type: constant
-            value: 8
+            value: 4
           query:
             type: mixed
             value: '{{#1749550044.query#}}'
@@ -1245,7 +1245,7 @@ workflow:
             - mcp-headroom：上下文压缩（headroom_compress / headroom_retrieve；大输出 ≥400行或≥8KB
             时考虑压缩；编辑代码前不压缩）
 
-            - mcp-codegraph：代码图谱（codegraph_search 符号检索；已在 Codegraph 阶段完成，结果见下方【Codegraph
+            - mcp-codegraph：代码图谱（codegraph_explore 探查；已在 Codegraph 阶段完成，结果见下方【Codegraph
             代码图谱上下文】）
 
 
@@ -1287,7 +1287,7 @@ workflow:
 
             - 涉及具体文件/符号/调用链时，以【Codegraph 代码图谱上下文】为事实依据
 
-            - 上下文为占位（已跳过/断连）或为空时，明确说明「未做代码图谱检索」，按推理给方案
+            - 上下文为占位（已跳过/断连）或为空时，明确说明「未做代码图谱探查」，按推理给方案
 
             - 不要把 Codegraph 未覆盖的路径/签名当作既有事实
 

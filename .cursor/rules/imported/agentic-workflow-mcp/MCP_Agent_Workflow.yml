@@ -1003,10 +1003,14 @@ workflow:
     - data:
         desc: 上下文不大时直接透传，不调用 Headroom
         selected: false
-        template: '{{#1749550019.output#}}'
+        template: '{{ p0_output }}'
         title: Headroom Skip · 透传上下文
         type: template-transform
-        variables: []
+        variables:
+        - value_selector:
+          - '1749550019'
+          - output
+          variable: p0_output
       height: 96
       id: '1749550028'
       position:
@@ -1176,10 +1180,14 @@ workflow:
     - data:
         desc: P1 跳过时透传用户原始需求
         selected: false
-        template: '{{#1749550001.question#}}'
+        template: '{{ question }}'
         title: P1 Skip · 透传需求
         type: template-transform
-        variables: []
+        variables:
+        - value_selector:
+          - '1749550001'
+          - question
+          variable: question
       height: 80
       id: '1749550010'
       position:

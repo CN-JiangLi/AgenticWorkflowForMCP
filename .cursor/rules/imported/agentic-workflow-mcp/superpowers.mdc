@@ -1,0 +1,114 @@
+---
+description: Superpowers 认知技能全量目录与 P0–P3 阶段映射
+alwaysApply: true
+version: 1.1.0
+last_updated: 2026-06-15
+---
+
+# Superpowers 认知技能
+
+> **性质**：Cursor 插件技能（**非 MCP 工具**）；通过宿主 `agent_skills` 注入或 Read `SKILL.md` 启用。  
+> **Dify 阶段 A**：`dify.mdc` · `MCP_Agent_Workflow` 整链（P0 检索→P1 优化→P2 场景推理→P3 入库），不调 Superpowers。  
+> **阶段 B**：消费五字段后按场景选型；交付前 `verification-before-completion` 为硬门闩。
+
+## 全量目录（14 Skills + 1 子代理）
+
+| Skill | 用途 |
+| ----- | ---- |
+| `using-superpowers` | 会话开始判断是否有适用技能 |
+| `brainstorming` | 新功能/改行为：边界 → 2～3 方案 → 推荐 |
+| `writing-plans` | 多步任务拆解 + 验收标准 + 清单 |
+| `executing-plans` | 跨会话执行已写好的计划 |
+| `subagent-driven-development` | 当前会话内按计划派生子任务 |
+| `dispatching-parallel-agents` | 2+ 独立任务并行 |
+| `test-driven-development` | 红 → 绿 → 重构 |
+| `systematic-debugging` | 证据 → 假设 → 验证 → 根因 → 回归 |
+| `verification-before-completion` | 完成前必跑验证（**默认门闩**） |
+| `requesting-code-review` | 主动请求 review |
+| `receiving-code-review` | 处理 review 反馈（先验证再改） |
+| `finishing-a-development-branch` | 测试通过后合并/PR/清理 |
+| `using-git-worktrees` | 隔离分支开发 |
+| `writing-skills` | 编写/维护技能文件 |
+
+**子代理**：`code-reviewer` — major 步骤完成后对照计划评审。
+
+**已废弃命令**（改用 Skill）：`/brainstorm` → `brainstorming`；`/write-plan` → `writing-plans`；`/execute-plan` → `executing-plans`。
+
+## 阶段映射（Dify MCP 阶段 A → Cursor 阶段 B）
+
+| 阶段 | Superpowers | 仓库事实来源 |
+| ---- | ----------- | ------------ |
+| 阶段 A（Dify MCP） | — | Dify 内嵌 Codegraph 探查 |
+| 会话开始 / 阶段 B 入口 | `using-superpowers` | — |
+| 消费 `answer` 后方案未定 | `brainstorming` | `codegraph_context` |
+| 落地计划 | `writing-plans` | `codegraph_context` |
+| 实现 | `test-driven-development` | `codegraph_context` / Read |
+| Bug | `systematic-debugging` | `codegraph_context` / Grep |
+| 并行子任务 | `dispatching-parallel-agents` | — |
+| **交付前** | **`verification-before-completion`** | — |
+| 交付后 | `requesting-code-review` | — |
+| 分支收尾 | `finishing-a-development-branch` | — |
+
+## 显式触发词
+
+| Skill | 触发词 |
+| ----- | ------ |
+| `brainstorming` | 「先 brainstorm」「用 brainstorming 设计」 |
+| `writing-plans` | 「帮我拆解任务」「先走 writing-plans」 |
+| `test-driven-development` | 「按 TDD 实现」 |
+| `systematic-debugging` | 「定位根因」「systematic-debugging」 |
+| `verification-before-completion` | 「彻底验证后再结论」 |
+| `requesting-code-review` | 「review 改动」「评审代码」 |
+| `finishing-a-development-branch` | 「收尾分支」「功能完成收尾」 |
+| `executing-plans` | 「执行这份计划」 |
+| `using-git-worktrees` | 「用 worktree」 |
+
+## 自动映射
+
+| 场景 | 自动选用 |
+| ---- | -------- |
+| 报错 / 测试失败 / 行为异常 | `systematic-debugging` |
+| 声明「完成」「已修好」「可以了」 | `verification-before-completion` |
+| 新功能且方案模糊 | `brainstorming` |
+| 3+ 文件或跨模块 | `writing-plans` |
+| 计划含 **3+ 互不依赖**文件/模块改动 | `using-git-worktrees`（隔离） |
+| 可拆 **2+ 无共享状态**独立子任务 | `dispatching-parallel-agents`（并行） |
+
+## 各 Skill 执行要点
+
+**brainstorming** — 边界澄清 → 2～3 方案对比 → 推荐；可选 `insert_text([tags: brainstorming])`（可跳过 track）。
+
+**writing-plans** — 子任务 + 验收标准 → 用户确认 → 实现；里程碑 `insert_text([tags: plan])`（必须 track）。
+
+**test-driven-development** — 先写失败测试 → 最小实现 → 重构；无测试框架 → 阻塞说明 + 手测清单。
+
+**systematic-debugging** — 收集证据（日志/复现/stack）→ 假设 → 验证 → 根因 → 修复 → 回归；调用链以 Dify `codegraph_context` 为线索，必要时 Grep/Read 核对。
+
+**verification-before-completion** — 列影响范围 → 跑 typecheck/lint/test → 贴输出；**未全通过不说「任务完成」**。
+
+**requesting-code-review** — 按 diff 列严重/建议/疑问；可用 `code-reviewer` 子代理。
+
+**receiving-code-review** — 技术验证后再决定是否采纳；不表演式同意。
+
+**finishing-a-development-branch** — 验证通过 → PR/合并（git 须用户批准）→ 收尾报告。
+
+## 与 Dify MCP 的关系
+
+见 `dify.mdc`：阶段 A 仅 `MCP_Agent_Workflow`；阶段 B 须 Read SKILL **实际执行**，非复述 Dify `answer`。
+
+## 优先级
+
+1. 用户显式指令（含 `AGENTS.md`）
+2. Superpowers Skill 流程
+3. 默认系统行为
+
+用户说「不要 TDD」时跳过 `test-driven-development`，即使用户未说「跳过 Superpowers」。
+
+## 执行异常
+
+| 阻塞 | 降级 |
+| ---- | ---- |
+| 无测试框架 | 手测清单 + typecheck |
+| Elements 不可用 | `AGENTS.md` agents-workflow + 最小阅读 |
+| `codegraph_context` 为空/占位 | Grep+Read 核对；`systematic-debugging` 仍执行 |
+| 某 Skill 的 `SKILL.md` 无法 Read（未注入/缺失） | 跳过该 Skill，降级为基础行为（直接写代码 / 手测 / 顺序执行），并在回复中说明「<Skill> 不可用，已降级」 |

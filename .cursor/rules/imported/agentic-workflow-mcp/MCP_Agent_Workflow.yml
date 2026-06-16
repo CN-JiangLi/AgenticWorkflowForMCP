@@ -1,0 +1,1675 @@
+app:
+  description: 本地 MCP Agent 工作流 | wf_version 1.2.3 | updated 2026-06-15 | P0
+    LightRAG→Headroom→Codegraph(explore)→P1→P2→P3（explore maxFiles=4+default-value 防断连）
+  icon: 🔗
+  icon_background: '#D5E8FF'
+  icon_type: emoji
+  mode: workflow
+  name: MCP_Agent_Workflow
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/siliconflow:0.0.56@146782fa473203f20f37169c191d706f9afc8b75606eeaba965f70800e8d606d
+    version: null
+kind: app
+version: 0.6.0
+workflow:
+  conversation_variables: []
+  environment_variables:
+  - description: LightRAG Server 基址（API 文档见 /docs）
+    id: lightrag-base-url
+    name: LIGHTRAG_BASE_URL
+    selector:
+    - env
+    - LIGHTRAG_BASE_URL
+    value: http://host.docker.internal:9621
+    value_type: string
+  - description: LightRAG X-API-Key（与 Server .env 中 LIGHTRAG_API_KEY 一致）
+    id: lightrag-api-key
+    name: LIGHTRAG_API_KEY
+    selector:
+    - env
+    - LIGHTRAG_API_KEY
+    value: b2343921-886e-415e-832d-592294d76823
+    value_type: secret
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 20
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        single_chunk_attachment_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: if-else
+      id: 1749550001-source-1749550002-target
+      source: '1749550001'
+      sourceHandle: source
+      target: '1749550002'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: template-transform
+      id: 1749550002-true-1749550004-target
+      selected: false
+      source: '1749550002'
+      sourceHandle: 'true'
+      target: '1749550004'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: 1749550002-false-1749550003-target
+      selected: false
+      source: '1749550002'
+      sourceHandle: 'false'
+      target: '1749550003'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: template-transform
+        targetType: variable-aggregator
+      id: 1749550004-source-1749550005-target
+      selected: false
+      source: '1749550004'
+      sourceHandle: source
+      target: '1749550005'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: 1749550003-source-1749550019-target
+      selected: false
+      source: '1749550003'
+      sourceHandle: source
+      target: '1749550019'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: if-else
+      id: 1749550019-source-1749550026-target
+      selected: false
+      source: '1749550019'
+      sourceHandle: source
+      target: '1749550026'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: tool
+      id: 1749550026-true-1749550027-target
+      selected: false
+      source: '1749550026'
+      sourceHandle: 'true'
+      target: '1749550027'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: template-transform
+      id: 1749550026-false-1749550028-target
+      selected: false
+      source: '1749550026'
+      sourceHandle: 'false'
+      target: '1749550028'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: tool
+        targetType: code
+      id: 1749550027-success-branch-1749550029-target
+      selected: false
+      source: '1749550027'
+      sourceHandle: success-branch
+      target: '1749550029'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: variable-aggregator
+      id: 1749550029-source-1749550005-target
+      selected: false
+      source: '1749550029'
+      sourceHandle: source
+      target: '1749550005'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: tool
+        targetType: template-transform
+      id: 1749550027-fail-branch-1749550028-target
+      selected: false
+      source: '1749550027'
+      sourceHandle: fail-branch
+      target: '1749550028'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: template-transform
+        targetType: variable-aggregator
+      id: 1749550028-source-1749550005-target
+      selected: false
+      source: '1749550028'
+      sourceHandle: source
+      target: '1749550005'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: variable-aggregator
+        targetType: if-else
+      id: 1749550005-source-1749550040-target
+      selected: false
+      source: '1749550005'
+      sourceHandle: source
+      target: '1749550040'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: template-transform
+      id: 1749550040-true-1749550042-target
+      selected: false
+      source: '1749550040'
+      sourceHandle: 'true'
+      target: '1749550042'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      id: 1749550040-false-1749550044-target
+      selected: false
+      source: '1749550040'
+      sourceHandle: 'false'
+      target: '1749550044'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: tool
+      id: 1749550044-source-1749550041-target
+      selected: false
+      source: '1749550044'
+      sourceHandle: source
+      target: '1749550041'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: tool
+        targetType: variable-aggregator
+      id: 1749550041-source-1749550043-target
+      selected: false
+      source: '1749550041'
+      sourceHandle: source
+      target: '1749550043'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: template-transform
+        targetType: variable-aggregator
+      id: 1749550042-source-1749550043-target
+      selected: false
+      source: '1749550042'
+      sourceHandle: source
+      target: '1749550043'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: variable-aggregator
+        targetType: if-else
+      id: 1749550043-source-1749550006-target
+      selected: false
+      source: '1749550043'
+      sourceHandle: source
+      target: '1749550006'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: template-transform
+      id: 1749550006-true-1749550010-target
+      source: '1749550006'
+      sourceHandle: 'true'
+      target: '1749550010'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: tool
+      id: 1749550006-false-1749550007-target
+      source: '1749550006'
+      sourceHandle: 'false'
+      target: '1749550007'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: tool
+        targetType: llm
+      id: 1749550007-source-1749550008-target
+      source: '1749550007'
+      sourceHandle: source
+      target: '1749550008'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: tool
+      id: 1749550008-source-1749550009-target
+      source: '1749550008'
+      sourceHandle: source
+      target: '1749550009'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: tool
+        targetType: variable-aggregator
+      id: 1749550009-source-1749550011-target
+      source: '1749550009'
+      sourceHandle: source
+      target: '1749550011'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: template-transform
+        targetType: variable-aggregator
+      id: 1749550010-source-1749550011-target
+      source: '1749550010'
+      sourceHandle: source
+      target: '1749550011'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: variable-aggregator
+        targetType: llm
+      id: 1749550011-source-1749550012-target
+      source: '1749550011'
+      sourceHandle: source
+      target: '1749550012'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: llm
+      id: 1749550012-source-1749550014-target
+      source: '1749550012'
+      sourceHandle: source
+      target: '1749550014'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: if-else
+      id: 1749550014-source-1749550020-target
+      source: '1749550014'
+      sourceHandle: source
+      target: '1749550020'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: template-transform
+      id: 1749550020-true-1749550022-target
+      source: '1749550020'
+      sourceHandle: 'true'
+      target: '1749550022'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: 1749550020-false-1749550015-target
+      source: '1749550020'
+      sourceHandle: 'false'
+      target: '1749550015'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: 1749550015-source-1749550018-target
+      source: '1749550015'
+      sourceHandle: source
+      target: '1749550018'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: http-request
+      id: 1749550018-source-1749550016-target
+      source: '1749550018'
+      sourceHandle: source
+      target: '1749550016'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: variable-aggregator
+      id: 1749550016-source-1749550021-target
+      source: '1749550016'
+      sourceHandle: source
+      target: '1749550021'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: template-transform
+        targetType: variable-aggregator
+      id: 1749550022-source-1749550021-target
+      source: '1749550022'
+      sourceHandle: source
+      target: '1749550021'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: variable-aggregator
+        targetType: end
+      id: 1749550021-source-1749550017-target
+      source: '1749550021'
+      sourceHandle: source
+      target: '1749550017'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: 用户任务输入
+        selected: false
+        title: Start
+        type: start
+        variables:
+        - label: 用户任务
+          max_length: 8000
+          options: []
+          required: true
+          type: paragraph
+          variable: question
+      height: 137
+      id: '1749550001'
+      position:
+        x: 0
+        y: 135.4
+      positionAbsolute:
+        x: 0
+        y: 135.4
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: contains
+            id: a1b2c3d4-0001-4000-8000-000000000001
+            value: 跳过知识库
+            varType: string
+            variable_selector:
+            - '1749550001'
+            - question
+          - comparison_operator: contains
+            id: a1b2c3d4-0001-4000-8000-000000000002
+            value: 跳过记忆
+            varType: string
+            variable_selector:
+            - '1749550001'
+            - question
+          id: 'true'
+          logical_operator: or
+        desc: mcp-core P0 豁免：跳过知识库 / 跳过记忆
+        selected: false
+        title: P0 Gate · 跳过检索？
+        type: if-else
+      height: 242
+      id: '1749550002'
+      position:
+        x: 342
+        y: 105.73333333333335
+      positionAbsolute:
+        x: 342
+        y: 105.73333333333335
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          config:
+            api_key: '{{#env.LIGHTRAG_API_KEY#}}'
+            header: X-API-Key
+            type: custom
+          type: api-key
+        body:
+          data:
+          - key: ''
+            type: text
+            value: '{"query": "{{#1749550001.question#}}", "mode": "hybrid", "only_need_context":
+              true, "include_references": false}'
+          type: json
+        default_value:
+        - key: body
+          type: string
+          value: （P0 检索服务不可用，已按空上下文继续）
+        desc: P0 · LightRAG POST /query（mode=hybrid, only_need_context=true；失败降级不阻塞）
+        error_strategy: default-value
+        headers: 'Content-Type:application/json
+
+          X-API-Key:{{#env.LIGHTRAG_API_KEY#}}'
+        method: post
+        params: ''
+        retry_config:
+          enabled: true
+          exponential_backoff:
+            enabled: false
+            max_interval: 10000
+            multiplier: 2
+          max_retries: 2
+          retry_interval: 1000
+        selected: false
+        ssl_verify: true
+        timeout:
+          connect: 10
+          read: 30
+          write: 30
+        title: P0 · LightRAG 检索
+        type: http-request
+        url: '{{#env.LIGHTRAG_BASE_URL#}}/query'
+      height: 172
+      id: '1749550003'
+      position:
+        x: 704
+        y: 297.8666666666667
+      positionAbsolute:
+        x: 704
+        y: 297.8666666666667
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import json\n\ndef main(body: str) -> dict:\n    text = \"\"\n    if\
+          \ body:\n        try:\n            data = json.loads(body)\n           \
+          \ if isinstance(data, dict):\n                text = str(data.get(\"response\"\
+          ) or data.get(\"content\") or \"\")\n            else:\n               \
+          \ text = body\n        except Exception:\n            text = body\n    return\
+          \ {\"output\": text, \"length\": len(text)}\n"
+        code_language: python3
+        desc: 从 POST /query 响应 JSON 提取 response/content 作为 P0 上下文；同时输出长度供 Headroom
+          体积门闩判断
+        outputs:
+          length:
+            children: null
+            type: number
+          output:
+            children: null
+            type: string
+        selected: false
+        title: P0 · 解析检索上下文
+        type: code
+        variables:
+        - value_selector:
+          - '1749550003'
+          - body
+          value_type: string
+          variable: body
+      height: 112
+      id: '1749550019'
+      position:
+        x: 1046
+        y: 356.53333333333336
+      positionAbsolute:
+        x: 1046
+        y: 356.53333333333336
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: P0 跳过时占位
+        selected: false
+        template: （已跳过知识库检索）
+        title: P0 Skip Placeholder
+        type: template-transform
+        variables: []
+      height: 80
+      id: '1749550004'
+      position:
+        x: 1046
+        y: 196.53333333333336
+      positionAbsolute:
+        x: 1046
+        y: 196.53333333333336
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        advanced_settings:
+          group_enabled: false
+          groups:
+          - groupId: f6993123-c7d7-4e8f-91b8-2c0293a91c8a
+            group_name: Group1
+            output_type: string
+            variables:
+            - - '1749550029'
+              - output
+            - - '1749550028'
+              - output
+            - - '1749550004'
+              - output
+        desc: 合并 P0 上下文（压缩 / 透传 / 跳过占位，三选一）
+        output_type: string
+        selected: false
+        title: P0 Context Merge
+        type: variable-aggregator
+        variables:
+        - - '1749550029'
+          - output
+        - - '1749550028'
+          - output
+        - - '1749550004'
+          - output
+      height: 204
+      id: '1749550005'
+      position:
+        x: 2132
+        y: 115.50000000000003
+      positionAbsolute:
+        x: 2132
+        y: 115.50000000000003
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: contains
+            id: c0de9a40-0001-4000-8000-000000000001
+            value: 跳过codegraph
+            varType: string
+            variable_selector:
+            - '1749550001'
+            - question
+          - comparison_operator: contains
+            id: c0de9a40-0001-4000-8000-000000000002
+            value: 跳过代码图谱
+            varType: string
+            variable_selector:
+            - '1749550001'
+            - question
+          - comparison_operator: contains
+            id: c0de9a40-0001-4000-8000-000000000003
+            value: 跳过代码分析
+            varType: string
+            variable_selector:
+            - '1749550001'
+            - question
+          id: 'true'
+          logical_operator: or
+        desc: Codegraph 豁免：用户要求跳过代码图谱时不查；否则默认探查仓库结构
+        selected: false
+        title: Codegraph Gate · 跳过代码图谱？
+        type: if-else
+      height: 200
+      id: '1749550040'
+      position:
+        x: 2132
+        y: 460
+      positionAbsolute:
+        x: 2132
+        y: 460
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import re\n\ndef main(question: str) -> dict:\n    q = (question or\
+          \ \"\").strip()\n    tokens = re.findall(\n        r'`([^`]+)`|([A-Z][a-zA-Z0-9]+(?:[A-Z][a-zA-Z0-9]+)+)|([a-zA-Z_][a-zA-Z0-9_]{2,})',\n\
+          \        q,\n    )\n    terms = []\n    for groups in tokens:\n        for\
+          \ g in groups:\n            if g and len(g) >= 3 and g not in terms:\n \
+          \               terms.append(g)\n    if terms:\n        q = \" \".join(terms[:8])\n\
+          \    elif len(q) > 200:\n        q = q[:200]\n    return {\"query\": q}\n"
+        code_language: python3
+        desc: 从用户任务提取符号/路径关键词（≤8 个），供 codegraph_explore 探查
+        outputs:
+          query:
+            children: null
+            type: string
+        selected: false
+        title: Codegraph · 精简查询
+        type: code
+        variables:
+        - value_selector:
+          - '1749550001'
+          - question
+          value_type: string
+          variable: question
+      height: 96
+      id: '1749550044'
+      position:
+        x: 2474
+        y: 320
+      positionAbsolute:
+        x: 2474
+        y: 320
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        default_value:
+        - key: text
+          type: string
+          value: （Codegraph explore 超时或断连，已按空上下文继续）
+        desc: Codegraph · 代码图谱探查（codegraph_explore，maxFiles=4；MCP 断连时 default-value 不阻塞）
+        error_strategy: default-value
+        provider_id: mcp-codegraph
+        provider_name: mcp-codegraph
+        provider_type: mcp
+        selected: false
+        title: Codegraph · 代码图谱探查
+        tool_configurations: {}
+        tool_description: Explore repository symbols, call chains and structure with source
+        tool_label: codegraph_explore
+        tool_name: codegraph_explore
+        tool_node_version: '2'
+        tool_parameters:
+          maxFiles:
+            type: constant
+            value: 4
+          query:
+            type: mixed
+            value: '{{#1749550044.query#}}'
+        type: tool
+      height: 144
+      id: '1749550041'
+      position:
+        x: 2474
+        y: 400
+      positionAbsolute:
+        x: 2474
+        y: 400
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: 跳过或 Codegraph 失败时占位
+        selected: false
+        template: （Codegraph 探查已跳过或服务不可用，已按空上下文继续）
+        title: Codegraph Skip Placeholder
+        type: template-transform
+        variables: []
+      height: 96
+      id: '1749550042'
+      position:
+        x: 2474
+        y: 620
+      positionAbsolute:
+        x: 2474
+        y: 620
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        advanced_settings:
+          group_enabled: false
+          groups: []
+        desc: 合并 Codegraph 探查结果或跳过占位
+        output_type: string
+        selected: false
+        title: Codegraph Context Merge
+        type: variable-aggregator
+        variables:
+        - - '1749550041'
+          - text
+        - - '1749550042'
+          - output
+      height: 162
+      id: '1749550043'
+      position:
+        x: 2816
+        y: 500
+      positionAbsolute:
+        x: 2816
+        y: 500
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: '>'
+            id: d4e5f6a7-0004-4000-8000-000000000001
+            value: '6000'
+            varType: number
+            variable_selector:
+            - '1749550019'
+            - length
+          id: 'true'
+          logical_operator: and
+        desc: 检索上下文超过阈值（约 6000 字）才压缩，节省 P1/P2 上下文窗口（Qwen 32K 容量充裕，阈值过低会丢细节）
+        selected: false
+        title: Headroom Gate · 上下文过大？
+        type: if-else
+      height: 168
+      id: '1749550026'
+      position:
+        x: 1408
+        y: 54.400000000000034
+      positionAbsolute:
+        x: 1408
+        y: 54.400000000000034
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: Headroom · 压缩大段 P0 检索上下文（mcp-headroom / headroom_compress；失败回退原文透传）
+        error_strategy: fail-branch
+        provider_id: mcp-headroom
+        provider_name: mcp-headroom
+        provider_type: mcp
+        selected: false
+        title: Headroom · 压缩上下文
+        tool_configurations: {}
+        tool_description: Compress large content to save context window space
+        tool_label: headroom_compress
+        tool_name: headroom_compress
+        tool_node_version: '2'
+        tool_parameters:
+          content:
+            type: mixed
+            value: '{{#1749550019.output#}}'
+        type: tool
+      height: 144
+      id: '1749550027'
+      position:
+        x: 1770
+        y: 0
+      positionAbsolute:
+        x: 1770
+        y: 0
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "def main(text, data):\n    out = text if text else \"\"\n    if not\
+          \ out and isinstance(data, list) and data:\n        first = data[0]\n   \
+          \     if isinstance(first, dict):\n            out = first.get(\"compressed\"\
+          ) or \"\"\n    return {\"output\": str(out) if out else \"\"}\n"
+        code_language: python3
+        desc: 从 headroom_compress 输出提取压缩文本（json[0].compressed，兜底 text）——工具的 text 字段通常为空
+        outputs:
+          output:
+            children: null
+            type: string
+        selected: false
+        title: Headroom · 取压缩文本
+        type: code
+        variables:
+        - value_selector:
+          - '1749550027'
+          - text
+          value_type: string
+          variable: text
+        - value_selector:
+          - '1749550027'
+          - json
+          value_type: array[object]
+          variable: data
+      height: 96
+      id: '1749550029'
+      position:
+        x: 1980
+        y: -120
+      positionAbsolute:
+        x: 1980
+        y: -120
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: 上下文不大时直接透传，不调用 Headroom
+        selected: false
+        template: '{{#1749550019.output#}}'
+        title: Headroom Skip · 透传上下文
+        type: template-transform
+        variables: []
+      height: 96
+      id: '1749550028'
+      position:
+        x: 1770
+        y: 224.00000000000003
+      positionAbsolute:
+        x: 1770
+        y: 224.00000000000003
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: contains
+            id: a1b2c3d4-0002-4000-8000-000000000001
+            value: 直接干
+            varType: string
+            variable_selector:
+            - '1749550001'
+            - question
+          - comparison_operator: contains
+            id: a1b2c3d4-0002-4000-8000-000000000002
+            value: 别优化
+            varType: string
+            variable_selector:
+            - '1749550001'
+            - question
+          id: 'true'
+          logical_operator: or
+        desc: mcp-prompt-optimizer P1 豁免
+        selected: false
+        title: P1 Gate · 跳过优化？
+        type: if-else
+      height: 178
+      id: '1749550006'
+      position:
+        x: 2474
+        y: 162.50000000000003
+      positionAbsolute:
+        x: 2474
+        y: 162.50000000000003
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: P1 第一轮 · originalPrompt
+        provider_id: mcp-promptoptimizer
+        provider_name: mcp-promptoptimizer
+        provider_type: mcp
+        selected: false
+        title: P1-R1 · 优化指南
+        tool_configurations: {}
+        tool_description: Prompt optimizer round 1
+        tool_label: promptenhancer
+        tool_name: promptenhancer
+        tool_node_version: '2'
+        tool_parameters:
+          originalPrompt:
+            type: mixed
+            value: '{{#1749550001.question#}}'
+        type: tool
+      height: 112
+      id: '1749550007'
+      position:
+        x: 2836
+        y: 314.7666666666667
+      positionAbsolute:
+        x: 2836
+        y: 314.7666666666667
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: P1 中间步 · 将指南整理为第二轮 optimizedPrompt
+        model:
+          completion_params: {}
+          mode: chat
+          name: Qwen/Qwen3.5-35B-A3B
+          provider: langgenius/siliconflow/siliconflow
+        prompt_template:
+        - id: p1-synth-system
+          role: system
+          text: '你是 Prompt 优化助手（mcp-prompt-optimizer P1 第二轮前置）。
+
+            根据第一轮 promptenhancer 返回的优化指南，整理出一份完整、可执行的终稿提示词。
+
+            只输出终稿提示词正文，不要解释。
+
+            '
+        - id: f3a2a0d4-94fe-4aab-a5e7-fc8c7e85d8b2
+          role: user
+          text: '用户原始需求：
+
+            {{#1749550001.question#}}
+
+
+            P0 知识库上下文：
+
+            {{#1749550005.output#}}
+
+
+            第一轮优化指南：
+
+            {{#1749550007.text#}}
+
+            '
+        selected: true
+        title: P1 · 整理终稿提示
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 132
+      id: '1749550008'
+      position:
+        x: 3178
+        y: 323.4333333333334
+      positionAbsolute:
+        x: 3178
+        y: 323.4333333333334
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: P1 第二轮 · optimizedPrompt
+        provider_id: mcp-promptoptimizer
+        provider_name: mcp-promptoptimizer
+        provider_type: mcp
+        selected: false
+        title: P1-R2 · 可执行终稿
+        tool_configurations: {}
+        tool_description: Prompt optimizer round 2
+        tool_label: promptenhancer
+        tool_name: promptenhancer
+        tool_node_version: '2'
+        tool_parameters:
+          optimizedPrompt:
+            type: mixed
+            value: '{{#1749550008.text#}}'
+        type: tool
+      height: 112
+      id: '1749550009'
+      position:
+        x: 3540
+        y: 54.76666666666671
+      positionAbsolute:
+        x: 3540
+        y: 54.76666666666671
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: P1 跳过时透传用户原始需求
+        selected: false
+        template: '{{#1749550001.question#}}'
+        title: P1 Skip · 透传需求
+        type: template-transform
+        variables: []
+      height: 80
+      id: '1749550010'
+      position:
+        x: 2836
+        y: 163.43333333333337
+      positionAbsolute:
+        x: 2836
+        y: 163.43333333333337
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        advanced_settings:
+          group_enabled: false
+          groups: []
+        desc: 合并 P1 终稿或跳过透传
+        output_type: string
+        selected: false
+        title: Final Prompt Merge
+        type: variable-aggregator
+        variables:
+        - - '1749550009'
+          - text
+        - - '1749550010'
+          - output
+      height: 162
+      id: '1749550011'
+      position:
+        x: 3902
+        y: 104.45000000000005
+      positionAbsolute:
+        x: 3902
+        y: 104.45000000000005
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: P2 场景路由 + 主执行（消费 P0 知识库 + Codegraph 代码图谱；filesystem 忽略）
+        model:
+          completion_params: {}
+          mode: chat
+          name: Qwen/Qwen3.5-35B-A3B
+          provider: langgenius/siliconflow/siliconflow
+        prompt_template:
+        - id: p2-system
+          role: system
+          text: '你是 MCP Agent 工作流执行器（P2），遵循 mcp-routing 场景路由规则。
+
+
+            ## 已配置能力（Dify）
+
+            - 本地 LightRAG Server：P0 POST /query、P3 POST /documents/text、GET /documents/track_status
+
+            - mcp-promptoptimizer：提示优化（已在 P1 完成）
+
+            - mcp-headroom：上下文压缩（headroom_compress / headroom_retrieve；大输出 ≥400行或≥8KB
+            时考虑压缩；编辑代码前不压缩）
+
+            - mcp-codegraph：代码图谱（codegraph_explore 探查；已在 Codegraph 阶段完成，结果见下方【Codegraph
+            代码图谱上下文】）
+
+
+            ## 未配置（跳过）
+
+            - user-filesystem：文件读写（本工作流不调用）
+
+            - Elements / Browser：不可用，用推理与已有上下文替代
+
+
+            ## P2 路由速查
+
+            - 知识库关键词（知识库/LightRAG/daniel_lightrag）→ 已在 P0 处理
+
+            - 仓库符号/调用链/影响面/模块结构 → 基于【Codegraph 代码图谱上下文】，不要臆造路径与签名
+
+            - API/接口类 → 结合 Codegraph 现有实现 + P0 上下文 + 需求推理
+
+            - UI/表格/布局 → 基于 P0 + Codegraph + 需求推理（无 Elements）
+
+            - Bug/报错 → systematic-debugging 思路：证据→假设→验证→修复，调用链以 Codegraph 为准
+
+            - 大段工具输出 → 说明可用 headroom_compress（横切，非阻塞）
+
+
+            ## 权威优先级
+
+            用户当次指令 > 仓库/Codegraph 事实 > LightRAG 检索结果
+
+
+            ## P0 消费规范
+
+            - 解析 [date: YYYY-MM-DD]；冲突取最新；语义去重
+
+            - 对外仅摘要 1～2 条关键结论
+
+
+            ## Codegraph 消费规范
+
+            - 涉及具体文件/符号/调用链时，以【Codegraph 代码图谱上下文】为事实依据
+
+            - 上下文为占位（已跳过/断连）或为空时，明确说明「未做代码图谱探查」，按推理给方案
+
+            - 不要把 Codegraph 未覆盖的路径/签名当作既有事实
+
+
+            ## 输出要求
+
+            给出完整可交付结果：方案/实现步骤/代码片段/操作清单。
+
+            若信息不足，只提 1 个聚焦问题。
+
+            '
+        - id: e8766298-49d5-44c4-868a-4931ed447f0a
+          role: user
+          text: '【可执行终稿提示】
+
+            {{#1749550011.output#}}
+
+
+            【P0 知识库上下文】
+
+            {{#1749550005.output#}}
+
+
+            【Codegraph 代码图谱上下文】
+
+            {{#1749550043.output#}}
+
+
+            【用户原始任务】
+
+            {{#1749550001.question#}}
+
+            '
+        selected: false
+        title: P2 · 主执行
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 132
+      id: '1749550012'
+      position:
+        x: 4244
+        y: 146.45000000000005
+      positionAbsolute:
+        x: 4244
+        y: 146.45000000000005
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: P2.5/P3 · 生成里程碑入库正文（含 tags 前缀）
+        model:
+          completion_params: {}
+          mode: chat
+          name: Qwen/Qwen3.5-35B-A3B
+          provider: langgenius/siliconflow/siliconflow
+        prompt_template:
+        - id: p3-system
+          role: system
+          text: "你是 LightRAG 知识沉淀助手（mcp-core P2.5/P3）。\n\n判断本次任务是否产生应入库的里程碑（decision/api/preference/plan/ui/architecture）。\n\
+            - 若是：输出 insert_text 正文，首部含结构化前缀，例如：\n  [tags: decision] [type: decision]\
+            \ [date: YYYY-MM-DD]\n  <决策正文>\n- 若否（纯咨询、无新决策、用户说跳过）：只输出一行 SKIP\n\n必须\
+            \ track 的 tags：decision, api, preference, plan, ui, architecture\n可跳过\
+            \ track：brainstorming, debug, note, wip\n"
+        - id: 7c66f5d4-ef7e-4744-b353-6ba409cf97ac
+          role: user
+          text: '用户任务：{{#1749550001.question#}}
+
+            P2 交付内容：{{#1749550012.text#}}
+
+            '
+        selected: false
+        title: P3 · 生成入库正文
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 132
+      id: '1749550014'
+      position:
+        x: 4586
+        y: 168.45000000000005
+      positionAbsolute:
+        x: 4586
+        y: 168.45000000000005
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          config:
+            api_key: '{{#env.LIGHTRAG_API_KEY#}}'
+            header: X-API-Key
+            type: custom
+          type: api-key
+        body:
+          data:
+          - key: ''
+            type: text
+            value: '{"text": "{{#1749550014.text#}}"}'
+          type: json
+        default_value:
+        - key: body
+          type: string
+          value: （P3 入库失败，已跳过；answer 不受影响）
+        desc: P3 · POST /documents/text（仅在 P3 Gate 判定需入库时执行；失败降级不阻塞）
+        error_strategy: default-value
+        headers: 'Content-Type:application/json
+
+          X-API-Key:{{#env.LIGHTRAG_API_KEY#}}'
+        method: post
+        params: ''
+        retry_config:
+          enabled: false
+          exponential_backoff:
+            enabled: false
+            max_interval: 10000
+            multiplier: 2
+          max_retries: 1
+          retry_interval: 1000
+        selected: false
+        ssl_verify: true
+        timeout:
+          connect: 10
+          read: 60
+          write: 30
+        title: P3 · LightRAG 入库
+        type: http-request
+        url: '{{#env.LIGHTRAG_BASE_URL#}}/documents/text'
+      height: 156
+      id: '1749550015'
+      position:
+        x: 5290
+        y: 299.90000000000003
+      positionAbsolute:
+        x: 5290
+        y: 299.90000000000003
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import json\nimport re\n\ndef main(insert_result: str) -> dict:\n \
+          \   if not insert_result or insert_result.strip().upper().startswith('SKIP'):\n\
+          \        return {\"track_id\": \"\"}\n    try:\n        data = json.loads(insert_result)\n\
+          \        if isinstance(data, dict):\n            tid = data.get(\"track_id\"\
+          ) or data.get(\"trackId\") or \"\"\n            return {\"track_id\": str(tid)\
+          \ if tid else \"\"}\n    except Exception:\n        pass\n    match = re.search(r'\"\
+          track_id\"\\s*:\\s*\"([^\"]+)\"', insert_result)\n    if match:\n      \
+          \  return {\"track_id\": match.group(1)}\n    match = re.search(r'track_id[=:]\\\
+          s*([A-Za-z0-9_-]+)', insert_result)\n    if match:\n        return {\"track_id\"\
+          : match.group(1)}\n    return {\"track_id\": \"\"}\n"
+        code_language: python3
+        desc: 从 POST /documents/text 的 body 输出中解析 track_id
+        outputs:
+          track_id:
+            children: null
+            type: string
+        selected: false
+        title: P3 · 解析 track_id
+        type: code
+        variables:
+        - value_selector:
+          - '1749550015'
+          - body
+          value_type: string
+          variable: insert_result
+      height: 96
+      id: '1749550018'
+      position:
+        x: 5632
+        y: 355.90000000000003
+      positionAbsolute:
+        x: 5632
+        y: 355.90000000000003
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        authorization:
+          config:
+            api_key: '{{#env.LIGHTRAG_API_KEY#}}'
+            header: X-API-Key
+            type: custom
+          type: api-key
+        body:
+          data: []
+          type: none
+        default_value:
+        - key: body
+          type: string
+          value: （P3 track 状态不可用；入库可能未确认，answer 不受影响）
+        desc: P3 · GET /documents/track_status/{track_id}（失败降级不阻塞）
+        error_strategy: default-value
+        headers: ''
+        method: get
+        params: ''
+        retry_config:
+          enabled: false
+          exponential_backoff:
+            enabled: false
+            max_interval: 10000
+            multiplier: 2
+          max_retries: 1
+          retry_interval: 1000
+        selected: false
+        ssl_verify: true
+        timeout:
+          connect: 10
+          read: 30
+          write: 30
+        title: P3 · Track 确认
+        type: http-request
+        url: '{{#env.LIGHTRAG_BASE_URL#}}/documents/track_status/{{#1749550018.track_id#}}'
+      height: 175
+      id: '1749550016'
+      position:
+        x: 5994
+        y: 142.40000000000003
+      positionAbsolute:
+        x: 5994
+        y: 142.40000000000003
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: contains
+            id: c3d4e5f6-0003-4000-8000-000000000001
+            value: SKIP
+            varType: string
+            variable_selector:
+            - '1749550014'
+            - text
+          - comparison_operator: contains
+            id: c3d4e5f6-0003-4000-8000-000000000002
+            value: 跳过记忆
+            varType: string
+            variable_selector:
+            - '1749550001'
+            - question
+          - comparison_operator: contains
+            id: c3d4e5f6-0003-4000-8000-000000000003
+            value: 跳过沉淀
+            varType: string
+            variable_selector:
+            - '1749550001'
+            - question
+          - comparison_operator: contains
+            id: c3d4e5f6-0003-4000-8000-000000000004
+            value: 不入库
+            varType: string
+            variable_selector:
+            - '1749550001'
+            - question
+          id: 'true'
+          logical_operator: or
+        desc: mcp-core P3 门闩：LLM 判定 SKIP 或用户要求跳过 → 不入库
+        selected: false
+        title: P3 Gate · 是否入库？
+        type: if-else
+      height: 294
+      id: '1749550020'
+      position:
+        x: 4928
+        y: 109.45000000000005
+      positionAbsolute:
+        x: 4928
+        y: 109.45000000000005
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: P3 跳过入库时占位（未产生里程碑决策或用户要求跳过）
+        selected: false
+        template: （未产生里程碑决策，已跳过入库）
+        title: P3 Skip Placeholder
+        type: template-transform
+        variables: []
+      height: 96
+      id: '1749550022'
+      position:
+        x: 5632
+        y: 179.90000000000003
+      positionAbsolute:
+        x: 5632
+        y: 179.90000000000003
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        advanced_settings:
+          group_enabled: false
+          groups: []
+        desc: 合并 P3 track 确认结果或跳过占位
+        output_type: string
+        selected: false
+        title: P3 Status Merge
+        type: variable-aggregator
+        variables:
+        - - '1749550016'
+          - body
+        - - '1749550022'
+          - output
+      height: 162
+      id: '1749550021'
+      position:
+        x: 6356
+        y: 259.40000000000003
+      positionAbsolute:
+        x: 6356
+        y: 259.40000000000003
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        desc: 工作流输出
+        outputs:
+        - value_selector:
+          - '1749550012'
+          - text
+          value_type: string
+          variable: answer
+        - value_selector:
+          - '1749550005'
+          - output
+          value_type: string
+          variable: p0_context
+        - value_selector:
+          - '1749550043'
+          - output
+          value_type: string
+          variable: codegraph_context
+        - value_selector:
+          - '1749550011'
+          - output
+          value_type: string
+          variable: final_prompt
+        - value_selector:
+          - '1749550021'
+          - output
+          value_type: string
+          variable: track_status
+        selected: false
+        title: End
+        type: end
+      height: 194
+      id: '1749550017'
+      position:
+        x: 6698
+        y: 270.40000000000003
+      positionAbsolute:
+        x: 6698
+        y: 270.40000000000003
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 241.05222733423386
+      y: 201.48677259058178
+      zoom: 0.9113012806371424
+  rag_pipeline_variables: []

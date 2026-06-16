@@ -1,0 +1,157 @@
+---
+description: Dify MCP 工具全量（dify · MCP_Agent_Workflow）
+alwaysApply: true
+version: 1.1.0
+last_updated: 2026-06-15
+---
+
+# Dify MCP
+
+> **配置**：`.cursor/mcp.json` → `dify`  
+> **Endpoint**：`http://localhost:6061/mcp/server/AEvhL59jH274SwVT/mcp`（`transport: http`）  
+> **工作流定义**：`MCP_Agent_Workflow.yml`（对应 `wf_version 1.2.3`，见其 `app.description`）  
+> **编排**：见 `workflow.mdc` 阶段 A
+
+## Server 别名
+
+| 来源 | 名称 |
+| ---- | ---- |
+| `mcp.json` 键 | `dify` |
+| Cursor 宿主 | `user-dify`（常见） |
+
+**禁止**因 `dify` / `user-dify` 前缀差异放弃调用；择可用者 `CallMcpTool`。
+
+## 工具全量（当前 1 个）
+
+### `MCP_Agent_Workflow`
+
+**描述**：MCP Agent 工作流：P0 LightRAG 检索 → P1 提示优化（mcp-promptoptimizer 两轮）→ P2 场景执行（API/UI/Bug/架构等）→ P3 知识沉淀（里程碑决策入库）。
+
+| 项 | 说明 |
+| -- | ---- |
+| **用途** | 一次调用跑完 P0→P1→P2 推理→P3 知识沉淀（Dify 工作流整链） |
+| **适用** | 按知识库开发、功能/API 设计、Bug 分析、架构规划、跨模块任务 |
+| **不适用** | 单文件小改、纯咨询、用户说跳过 Dify |
+
+#### 入参
+
+| 参数 | 类型 | 必填 | 说明 |
+| ---- | ---- | ---- | ---- |
+| `question` | string | ✓ | 用户完整任务描述，≤8000 字；**须保留控制词** |
+
+**`question` 必含要素**（自然语言一段即可，不必强行分段）：
+
+| 要素 | 内容 |
+| ---- | ---- |
+| 做什么 | 任务目标、功能点或问题 |
+| 约束 / 模块 / 验收 | 技术栈、涉及模块、验收标准、交付物 |
+| 上下文 | 现有架构、相关文件、复现步骤、现象（如有） |
+| 知识库意图 | 需检索最佳实践时写明；含「知识库」「LightRAG」会**强制 P0** |
+| 控制词 | 按需写入原文，见下表 |
+
+**组装规则**（Agent 调 Dify 前）：
+
+1. 合并用户原话 + 已确认的约束/验收；不删改用户控制词
+2. 用户未写清验收标准时，从对话中补全可验证条目
+3. 用户要求「检索最佳实践 / 按知识库」→ 保留或补写「知识库」；勿加「跳过知识库」
+4. 用户要求「直接干 / 别优化」→ 原样写入 question
+5. 用户要求「记录方案 / 入库」→ 勿加「跳过沉淀」；仅临时任务才加跳过词
+6. 仓库代码无需 Cursor 侧预查 —— Codegraph 探查已内嵌 Dify P2；如需跳过，写入「跳过代码图谱」
+
+**`question` 参考示例**（MFA 功能 + 控制词组合）：
+
+```
+我需要为项目中的用户认证模块增加多因素认证（MFA）能力。当前架构：后端 Spring Boot 2.7 + Spring Security，前端 React 18 + Axios，已有 JWT 登录接口 /api/auth/login。需求：1. 登录成功但未绑定 MFA 时，返回需要绑定 TOTP 的二维码。2. 绑定接口验证 TOTP 后，开启 MFA。3. 已绑定用户登录时需要先验证 TOTP 再返回 JWT。4. 给出后端核心代码片段（Controller/Service）、前端扫码及验证逻辑。5. 记录本次方案决策。额外要求：不要跳过知识库，检索最佳实践；可以跳过提示优化，直接使用原始描述。
+```
+
+上例效果：P0 强制开启（「知识库」）· P1 跳过（「跳过提示优化」）· P3 开启（「记录方案决策」）。
+
+#### 控制词（写入 `question`，由 Dify 门闩解析）
+
+| 控制词 | 工作流节点 | 效果 |
+| ------ | ---------- | ---- |
+| 跳过知识库 / 跳过记忆 | P0 Gate | 不 POST LightRAG `/query` |
+| 直接干 / 别优化 / 跳过提示优化 | P1 Gate | 透传原始需求，不调 `promptenhancer` |
+| 跳过 codegraph / 跳过代码图谱 / 跳过代码分析 | Codegraph Gate | 不调 `codegraph_explore` |
+| 跳过沉淀 / 不入库 | P3 Gate | 不 POST `/documents/text` |
+
+含「知识库」「LightRAG」时 Dify 内 **强制 P0**（除非同时含跳过词）。
+
+**互斥控制词优先级**：同一 `question` 同时含「X」与「跳过X」时，**「跳过X」优先**（各 Gate 实现为 `contains 跳过词 → 跳过`，命中即跳）。组装 `question` 时若用户意图是要执行 X，勿混入跳过词。
+
+#### 出参（End 节点 · 五字段）
+
+| 字段 | 类型 | 来源节点 | 含义 |
+| ---- | ---- | -------- | ---- |
+| `answer` | string | P2 · 主执行 | 方案 / 步骤 / 代码片段 / 操作清单 |
+| `p0_context` | string | P0 Context Merge | LightRAG 检索上下文（或跳过占位） |
+| `codegraph_context` | string | Codegraph Context Merge | 仓库符号/调用链/结构探查（或跳过占位） |
+| `final_prompt` | string | Final Prompt Merge | P1 终稿或原始需求透传 |
+| `track_status` | string | P3 Status Merge | 入库 track 响应体，或跳过占位文案 |
+
+**消费顺序**：`p0_context`（裁决）→ `codegraph_context`（仓库事实）→ `final_prompt`（执行输入）→ `answer`（落地前与仓库核对）→ `track_status`（是否可宣称已入库）。
+
+#### Dify 内嵌能力（Agent 勿重复调用）
+
+工具执行期间 Dify 已代为调用（Cursor 侧不可见，成功后**禁止重复**）：
+
+| 阶段 | Dify 内动作 |
+| ---- | ----------- |
+| P0 | HTTP POST `{LIGHTRAG}/query`（`mode: hybrid`, `only_need_context: true`） |
+| Headroom | `headroom_compress`（P0 上下文 >2000 字） |
+| Codegraph | `codegraph_explore`（`mcp-codegraph`，maxFiles=4；用户写「跳过代码图谱」时跳过） |
+| P1 | `promptenhancer` R1（`originalPrompt`）→ LLM 整理 → R2（`optimizedPrompt`） |
+| P2 | LLM 场景路由（API / UI / Bug / 架构等）+ 主执行（消费 P0 + Codegraph；无 filesystem） |
+| P3 | LLM 生成入库正文 → POST `/documents/text` → GET `/documents/track_status/{id}` |
+
+## 调用规范
+
+### 调用前（硬）
+
+1. 读 `mcps/<dify|user-dify>/tools/MCP_Agent_Workflow.json` 或宿主工具列表确认 schema
+2. **禁止**未配置就判定 Dify 不可用；须先 `CallMcpTool` 一次，失败再按「异常」处理
+3. 按上节「组装规则」构造 `question`；控制词不删改
+
+### 调用示例
+
+```
+CallMcpTool
+  server: dify  （或 user-dify）
+  toolName: MCP_Agent_Workflow
+  arguments: { "question": "<按组装规则构造的用户任务全文>" }
+```
+
+### 调用后
+
+| 情况 | 动作 |
+| ---- | ---- |
+| 五字段齐全 | 进入 `workflow.mdc` 阶段 B |
+| 空对象 `{}` / 缺字段 | 重试 1 次；仍失败 → 直接进入阶段 B |
+| `track_status` 含跳过占位 | 不宣称已入库 |
+| `answer` 与仓库冲突 | 见 `workflow.mdc`「answer 与仓库冲突」；默认以仓库为准，`codegraph_context` 为辅证 |
+
+## P0 消费规范（`p0_context`）
+
+1. **权威**：用户指令 > 仓库代码 > `p0_context` > `answer`
+2. 解析 `[date: YYYY-MM-DD]`；冲突取最新；`supersedes:` 优先
+3. 对外仅摘要 1～2 条；禁止堆砌原文
+
+## 异常
+
+| 现象 | 行为 |
+| ---- | ---- |
+| `localhost:6061` 不可达 | 说明 Dify 服务未启动；直接进入阶段 B |
+| 工具列表无 `MCP_Agent_Workflow` | 检查 Dify 应用是否发布 MCP；直接进入阶段 B |
+| 连续 2 次失败 | 不再调 Dify；直接进入阶段 B（LightRAG / headroom / promptenhancer / 入库均由 Dify 内嵌，Cursor 不单独补调） |
+| 仅 `answer` 有内容 | 仍进阶段 B；`p0_context` 视为空继续 |
+| `p0_context` 含「检索服务不可用」占位 | LightRAG 超时/5xx 已被 Dify 降级（P0 HTTP `error_strategy: default-value`），**整链未中断**；按 P0 为空继续，必要时改用 Read/Grep 取仓库事实 |
+
+## 与 Superpowers 边界
+
+| 能力 | 归属 |
+| ---- | ---- |
+| P0–P3 编排、知识库、提示优化、代码图谱探查、入库 | **Dify `MCP_Agent_Workflow`** |
+| 改代码 / 落地 / 跑命令 | **阶段 B · Cursor** |
+| TDD/调试/验证/评审 | **阶段 B · Superpowers**（`superpowers.mdc`） |
+
+Dify `answer` 中的路径/符号落地前以 `codegraph_context` 为辅证、必要时用 Read/Grep 与仓库实际核对。

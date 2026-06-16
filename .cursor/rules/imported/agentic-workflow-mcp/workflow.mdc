@@ -1,0 +1,118 @@
+---
+description: MCP Agent 工作流主编排（Dify MCP 阶段 A + Cursor 阶段 B）
+alwaysApply: true
+version: 1.1.0
+last_updated: 2026-06-15
+---
+
+# MCP Agent 工作流
+
+> **Dify 工具详情**：`dify.mdc`（`MCP_Agent_Workflow` 入参/出参/门闩）  
+> **阶段 B**：`superpowers.mdc`  
+> **项目约束**：`AGENTS.md`
+
+## 架构
+
+```
+阶段 A    dify · MCP_Agent_Workflow(question)     →  P0–P3 整链（含 Codegraph 代码图谱探查）
+阶段 B    Superpowers + 改代码 + 验证            →  仓库落地
+```
+
+Dify 负责编排、知识沉淀与**代码图谱探查**（P2 内嵌 `mcp-codegraph`）；Cursor 负责**代码写入**与验证。
+
+## 总决策树
+
+```
+用户消息
+ ├─ 单点改动 / 「跳过 Dify」「直接改」→ 阶段 B（极简）
+ ├─ 复杂 / 知识库 / 功能开发 / Bug 分析 / 架构规划 / 「走工作流」
+ │    └─ 阶段 A：MCP_Agent_Workflow（Dify 内已含 Codegraph 探查）
+ │         ├─ 成功 → 消费五字段 → 阶段 B
+ │         └─ 失败×2 → 直接进入阶段 B
+ └─ 阶段 B 末 → verification-before-completion
+```
+
+## 阶段 A · 何时调 Dify
+
+**必须先调**（满足任一）：
+
+- 新功能 / 跨模块 / API 设计 / 按知识库开发
+- Bug 分析 / 架构规划
+- 含「知识库」「LightRAG」「走 Dify」「走工作流」
+- 需求模糊或可能产生里程碑决策
+- 用户要求记录方案决策 / 入库
+
+**跳过**（直接阶段 B）：
+
+- 单文件/单函数/改字段/跑命令
+- 已有 stack trace + 路径 + 明确修复点
+- 纯咨询 / 只读 review
+- 「跳过 Dify」「跳过工作流」「直接改」
+- Dify 连续 2 次失败 → 跳过阶段 A，直接阶段 B
+
+**调用**：`CallMcpTool` · `MCP_Agent_Workflow` · 参数 `question`（≤8000 字）。  
+**question 构造**：见 `dify.mdc`「组装规则」— 合并用户原话、约束/验收、上下文、控制词；示例见 MFA 段落。  
+**成功后禁止**：再调 `query_text` / `promptenhancer` / `insert_text` / `codegraph_explore`（P0/P1/P3 与代码图谱探查已由 Dify 内嵌完成）。
+
+## 阶段 B · Cursor 落地
+
+输入：`final_prompt` + `answer` + 已裁决的 `p0_context` + `codegraph_context`（Dify 已探查的代码图谱）
+
+```
+→ Superpowers 选型（superpowers.mdc）
+→ 以 codegraph_context 为仓库事实依据核对 answer
+→ 读写文件 / 跑命令
+→ verification-before-completion
+```
+
+| 场景 | 路径 |
+| ---- | ---- |
+| 新功能 | `brainstorming`/`writing-plans` → 依据 `codegraph_context` → 实现 |
+| API | 依据 `codegraph_context` 现状 → 实现 |
+| Bug | `systematic-debugging` + `codegraph_context` 调用链 |
+| 架构 | `writing-plans`（如需）→ 实现 |
+| UI / 表格 / 布局 | 依据 `codegraph_context` + Read 现有组件 → 实现（Elements/Browser 未配置，用推理替代） |
+| i18n / 精确串 | Grep |
+
+> Elements / Browser 当前**未接入**本工作流；涉及 UI 时不调用浏览器自动化，改用 `codegraph_context` + Read/Grep + 推理。
+
+### 并行 / 隔离触发（阶段 B）
+
+| 条件 | 动作 |
+| ---- | ---- |
+| 计划含 **3+ 互不依赖**的文件/模块改动 | `using-git-worktrees` 隔离 |
+| 可拆成 **2+ 无共享状态**的独立子任务 | `dispatching-parallel-agents` 并行 |
+| 任务串行依赖 / 单点改动 | 不拆，直接顺序执行 |
+
+`track_status` 非 success → 不宣称已入库，可汇报 Dify 返回内容。
+
+### answer 与仓库冲突（阶段 B 核对）
+
+`answer` / `codegraph_context` 中的路径/符号/签名落地前若与仓库实际不一致（codegraph 索引可能滞后）：
+
+| 情况 | 动作 |
+| ---- | ---- |
+| 确定性高（拼写、参数个数、路径不存在但邻近符号明确） | **以仓库为准自动修正**；回复中说明「Dify 建议 X，已按仓库事实改为 Y」 |
+| 语义/设计分歧（重构 vs 补丁、删行为 vs 保留） | **询问用户**：「Dify 建议 X，仓库现状 Y，采用哪个？」 |
+| codegraph_context 为空/占位（已跳过） | 用 Read/Grep 核对关键符号后再落地 |
+
+权威顺序不变：用户指令 > 仓库代码 > `codegraph_context` > `p0_context` > `answer`。
+
+## 可观测性
+
+- 调 Dify 前：意图 + server（`dify`/`user-dify`）+ `question` 摘要（含控制词）
+- Dify 返回后：**一条摘要**（p0 要点 / 是否优化 / track 状态）
+- 阶段 B 连续 MCP：合并一条摘要
+
+## 控制词速查
+
+| 控制词 | 效果 |
+| ------ | ---- |
+| 跳过知识库 / 跳过记忆 | Dify P0 跳过 |
+| 直接干 / 别优化 / 跳过提示优化 | Dify P1 跳过 |
+| 跳过沉淀 / 不入库 | Dify P3 跳过 |
+| 知识库 / LightRAG（无跳过词） | Dify P0 **强制** |
+| 跳过 Dify / 跳过工作流 / 直接改 | 不调 Dify |
+| 跳过 codegraph / 跳过代码图谱 / 跳过代码分析 | Dify Codegraph 探查跳过 |
+
+**冲突优先级**：同时出现互斥控制词（如「知识库」+「跳过知识库」）时，**「跳过 X」优先**——Dify Gate 命中跳过词即跳过对应阶段。这与各 Gate 的 `contains 跳过词 → 跳过` 实现一致。

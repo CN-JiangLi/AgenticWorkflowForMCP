@@ -9,7 +9,7 @@ last_updated: 2026-06-15
 
 > **配置**：`.cursor/mcp.json` → `dify`  
 > **Endpoint**：`http://localhost:6061/mcp/server/AEvhL59jH274SwVT/mcp`（`transport: http`）  
-> **工作流定义**：`MCP_Agent_Workflow.yml`（对应 `wf_version 1.2.3`，见其 `app.description`）  
+> **工作流定义**：`MCP_Agent_Workflow.yml`（对应 `wf_version 1.2.4`，见其 `app.description`）  
 > **编排**：见 `workflow.mdc` 阶段 A
 
 ## Server 别名
@@ -72,7 +72,7 @@ last_updated: 2026-06-15
 | ------ | ---------- | ---- |
 | 跳过知识库 / 跳过记忆 | P0 Gate | 不 POST LightRAG `/query` |
 | 直接干 / 别优化 / 跳过提示优化 | P1 Gate | 透传原始需求，不调 `promptenhancer` |
-| 跳过 codegraph / 跳过代码图谱 / 跳过代码分析 | Codegraph Gate | 不调 `codegraph_explore` |
+| 跳过 codegraph / 跳过代码图谱 / 跳过代码分析 | Codegraph Gate | 不调 `codegraph_search` |
 | 跳过沉淀 / 不入库 | P3 Gate | 不 POST `/documents/text` |
 
 含「知识库」「LightRAG」时 Dify 内 **强制 P0**（除非同时含跳过词）。
@@ -99,7 +99,7 @@ last_updated: 2026-06-15
 | ---- | ----------- |
 | P0 | HTTP POST `{LIGHTRAG}/query`（`mode: hybrid`, `only_need_context: true`） |
 | Headroom | `headroom_compress`（P0 上下文 >2000 字） |
-| Codegraph | `codegraph_explore`（`mcp-codegraph`，maxFiles=4；用户写「跳过代码图谱」时跳过） |
+| Codegraph | `codegraph_search`（`mcp-codegraph`，limit=8；用户写「跳过代码图谱」时跳过） |
 | P1 | `promptenhancer` R1（`originalPrompt`）→ LLM 整理 → R2（`optimizedPrompt`） |
 | P2 | LLM 场景路由（API / UI / Bug / 架构等）+ 主执行（消费 P0 + Codegraph；无 filesystem） |
 | P3 | LLM 生成入库正文 → POST `/documents/text` → GET `/documents/track_status/{id}` |

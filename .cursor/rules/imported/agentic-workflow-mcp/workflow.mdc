@@ -52,7 +52,7 @@ Dify 负责编排、知识沉淀与**代码图谱探查**（P2 内嵌 `mcp-codeg
 
 **调用**：`CallMcpTool` · `MCP_Agent_Workflow` · 参数 `question`（≤8000 字）。  
 **question 构造**：见 `dify.mdc`「组装规则」— 合并用户原话、约束/验收、上下文、控制词；示例见 MFA 段落。  
-**成功后禁止**：再调 `query_text` / `promptenhancer` / `insert_text` / `codegraph_explore`（P0/P1/P3 与代码图谱探查已由 Dify 内嵌完成）。
+**成功后禁止**：再调 `query_text` / `promptenhancer` / `insert_text` / `codegraph_search`（P0/P1/P3 与代码图谱检索已由 Dify 内嵌完成）。
 
 ## 阶段 B · Cursor 落地
 
